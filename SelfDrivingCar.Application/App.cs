@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using SelfDrivingCar.Application.UI;
 using SelfDrivingCar.Car;
+using SelfDrivingCar.SpamElgoog;
 using SelfDrivingCar.TomTom;
 using SelfDrivingCar.World;
 
@@ -10,16 +11,18 @@ namespace SelfDrivingCar.Application;
 
 public sealed class App : Avalonia.Application
 {
-	private CarDriver? _carController;
-	private MotMotNavigate? _motMotNavigate;
-	private Map? _currentMap;
-	private MainWindow? _mainWindow;
+	private CarDriver carController;
+	private MotMotNavigate motMotNavigate;
+    private SpamElgoogNavigate spamElgoogNavigate;
+	private Map currentMap;
+	private MainWindow mainWindow;
 
 	public override void Initialize()
 	{
-		_currentMap = MapGenerator.GenerateMap();
-		_motMotNavigate = new MotMotNavigate(_currentMap);
-	}
+		currentMap = MapGenerator.GenerateMap();
+		motMotNavigate = new MotMotNavigate(currentMap);
+        spamElgoogNavigate = new SpamElgoogNavigate(currentMap);
+    }
 
 	public override void OnFrameworkInitializationCompleted()
 	{
@@ -33,18 +36,16 @@ public sealed class App : Avalonia.Application
 
 	private void CreateAndSetupWindow(IClassicDesktopStyleApplicationLifetime desktop)
 	{
-		_carController = new CarDriver(_motMotNavigate!);
+      carController = new CarDriver(motMotNavigate);
 
-		// Create and show the main window with the map
-		_mainWindow = new MainWindow();
-		if (_currentMap != null)
+		mainWindow = new MainWindow();
+		if (currentMap != null)
 		{
-			_mainWindow.SetMap(_currentMap);
+			mainWindow.SetMap(currentMap);
 		}
 
-		// Pass the car driver to the window
-		_mainWindow.SetCarDriver(_carController);
+		mainWindow.SetCarDriver(carController);
 
-		desktop.MainWindow = _mainWindow;
+		desktop.MainWindow = mainWindow;
 	}
 }

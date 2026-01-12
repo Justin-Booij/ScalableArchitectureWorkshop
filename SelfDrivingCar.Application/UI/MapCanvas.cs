@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
 using SelfDrivingCar.World;
 
 namespace SelfDrivingCar.Application.UI;
@@ -33,6 +34,12 @@ public class MapCanvas : Control
 	private double _carBearing; // in degrees
 	private bool _showCar;
 
+	// Explosion animation
+	private Coordinate? _explosionPosition;
+	private DateTime _explosionStartTime = DateTime.MinValue;
+	private const double EXPLOSION_DURATION_SECONDS = 1.5;
+	private DispatcherTimer? _explosionAnimationTimer;
+
 	// Events
 	public event EventHandler<NodeSelectionChangedEventArgs>? SelectionChanged;
 
@@ -62,6 +69,42 @@ public class MapCanvas : Control
 	{
 		_showCar = show;
 		InvalidateVisual();
+	}
+
+	public void TriggerExplosion(Coordinate position)
+	{
+		_explosionPosition = position;
+		_explosionStartTime = DateTime.Now;
+
+		// Start animation timer to update the display
+		if (_explosionAnimationTimer == null)
+		{
+			_explosionAnimationTimer = new DispatcherTimer();
+			_explosionAnimationTimer.Interval = TimeSpan.FromMilliseconds(16); // ~60 FPS
+			_explosionAnimationTimer.Tick += (s, e) =>
+			{
+				if (IsExplosionAnimationPlaying())
+				{
+					InvalidateVisual();
+				}
+				else
+				{
+					_explosionAnimationTimer.Stop();
+					_explosionPosition = null;
+					_explosionStartTime = DateTime.MinValue;
+				}
+			};
+		}
+
+		_explosionAnimationTimer.Start();
+		InvalidateVisual();
+	}
+
+	public bool IsExplosionAnimationPlaying()
+	{
+		if (_explosionStartTime == DateTime.MinValue) return false;
+		double elapsed = (DateTime.Now - _explosionStartTime).TotalSeconds;
+		return elapsed < EXPLOSION_DURATION_SECONDS;
 	}
 
 	protected override Size MeasureOverride(Size availableSize)
@@ -151,6 +194,12 @@ public class MapCanvas : Control
 		if (_showCar && _carPosition != null)
 		{
 			DrawCar(context);
+		}
+
+		// Draw explosion animation if playing
+		if (IsExplosionAnimationPlaying() && _explosionPosition != null)
+		{
+			DrawExplosion(context);
 		}
 	}
 
@@ -594,6 +643,78 @@ public class MapCanvas : Control
 		if (change.Property == BoundsProperty)
 		{
 			CalculateNodePositions();
+		}
+	}
+
+	private void DrawExplosion(DrawingContext context)
+	{
+		if (_explosionPosition == null) return;
+
+		double elapsed = (DateTime.Now - _explosionStartTime).TotalSeconds;
+		double progress = Math.Min(elapsed / EXPLOSION_DURATION_SECONDS, 1.0);
+
+		// Convert car position to screen coordinates
+		double availableWidth = Bounds.Width - (2 * Padding);
+		double availableHeight = Bounds.Height - (2 * Padding);
+		double screenX = Padding + ((_explosionPosition.Longitude - _cachedMinLon) / _cachedLonRange) * availableWidth;
+		double screenY = Padding + ((_cachedMaxLat - _explosionPosition.Latitude) / _cachedLatRange) * availableHeight;
+
+		var explosionCenter = new Point(screenX, screenY);
+
+		// Draw multiple explosion rings expanding outward
+		int numRings = 4;
+		for (int i = 0; i < numRings; i++)
+		{
+			double ringProgress = (progress + (i * 0.15)) % 1.0;
+			if (ringProgress < 0.8) // Only draw if still visible
+			{
+				double ringRadius = 10 + (ringProgress * 40);
+				double opacity = 1.0 - ringProgress;
+
+				// Outer ring (yellow/orange)
+				var ringBrush = new SolidColorBrush(Color.FromRgb(
+					(byte)(255 * opacity),
+					(byte)(150 * opacity),
+					0
+				));
+				var ringPen = new Pen(ringBrush, 2);
+				context.DrawEllipse(null, ringPen, explosionCenter, ringRadius, ringRadius);
+			}
+		}
+
+		// Draw explosion particles (expanding circles)
+		int numParticles = 12;
+		for (int i = 0; i < numParticles; i++)
+		{
+			double angle = (i / (double)numParticles) * Math.PI * 2;
+			double particleProgress = progress;
+			double particleDistance = particleProgress * 60;
+
+			double particleX = explosionCenter.X + Math.Cos(angle) * particleDistance;
+			double particleY = explosionCenter.Y + Math.Sin(angle) * particleDistance;
+
+			double particleSize = (1.0 - particleProgress) * 6;
+			if (particleSize > 0.5)
+			{
+				var particleBrush = new SolidColorBrush(Color.FromRgb(
+					255,
+					(byte)(100 * (1.0 - particleProgress)),
+					0
+				));
+				context.DrawEllipse(particleBrush, null, new Point(particleX, particleY), particleSize, particleSize);
+			}
+		}
+
+		// Draw center burst (bright white that fades)
+		double centerOpacity = Math.Max(0, 1.0 - (progress * 1.5));
+		if (centerOpacity > 0)
+		{
+			var centerBrush = new SolidColorBrush(Color.FromRgb(
+				255,
+				255,
+				(byte)(150 * centerOpacity)
+			));
+			context.DrawEllipse(centerBrush, null, explosionCenter, 15, 15);
 		}
 	}
 }

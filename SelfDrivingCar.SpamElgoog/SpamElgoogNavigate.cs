@@ -2,61 +2,95 @@ using SelfDrivingCar.World;
 
 namespace SelfDrivingCar.SpamElgoog;
 
-public class SpamElgoogNavigate
+public class SpamElgoogNavigate(Map worldMap)
 {
-	private int MIN_STEP_PERCENT = 5;
-	private int MAX_STAP_PERCENT = 10;
-	private double MAX_BEARING_DEVIATION = 45.0;
-	private int[] speeds = [25, 35, 55, 65, 80, 90, 125];
-
-
-
-	public List<Road> GenerateRoads(Coordinate start, Coordinate destination)
+	public List<Road>? Navigate(Node start, Node end)
 	{
-		Random random = new Random();
-		int amountOfRoads = random.Next(MIN_STEP_PERCENT, MAX_STAP_PERCENT);
-		Coordinate currentLocation = start;
-		List<Road> result = new List<Road>();
-		double totalMiles = GeoMath.CalculateDistance(start, destination);
-		double distanceToGo = totalMiles;
+		Console.WriteLine($"Finding route from {start.Name} to {end.Name}");
 
+		var distances = new Dictionary<string, double>();
+		var previous = new Dictionary<string, (Node node, int speedLimit)>();
+		var unvisited = new HashSet<string>();
 
-		for (int i = 0; i < amountOfRoads - 1; i++)
+		foreach (var node in worldMap.Nodes)
 		{
-
-			double distance = random.NextDouble() * ((distanceToGo / 2) - 1.0) + 1.0;
-			double bearing = GetRandomizedBearing(GeoMath.CalculateBearing(currentLocation, destination));
-
-			Coordinate currentTarget = GeoMath.CalculateDestinationPoint(currentLocation, bearing, distance);
-
-			Road road = new()
-			{
-				From = currentLocation,
-				SpeedLimit = speeds[random.Next(speeds.Length - 1)],
-				To = currentTarget
-			};
-			result.Add(road);
-			currentLocation = currentTarget;
-			distanceToGo = GeoMath.CalculateDistance(currentTarget, destination);
-
+			distances[node.Id] = double.MaxValue;
+			unvisited.Add(node.Id);
 		}
 
-		result.Add(new()
-		{
-			From = currentLocation,
-			SpeedLimit = speeds[random.Next(speeds.Length - 1)],
-			To = destination
-		});
+		distances[start.Id] = 0;
 
-		return result;
+		while (unvisited.Count > 0)
+		{
+			string? currentId = null;
+			double minDistance = double.MaxValue;
+			foreach (var id in unvisited)
+			{
+				if (distances[id] < minDistance)
+				{
+					minDistance = distances[id];
+					currentId = id;
+				}
+			}
+
+			if (currentId == null || minDistance == double.MaxValue)
+				break; // No path found
+
+			unvisited.Remove(currentId);
+			var current = worldMap.GetNodeById(currentId);
+
+			if (current == null)
+				continue;
+
+			if (currentId == end.Id)
+				return ReconstructPath(previous, start, end);
+
+			var connectedRoads = worldMap.GetConnections(current);
+			foreach (var (destination, distance, speedLimit) in connectedRoads)
+			{
+				if (!unvisited.Contains(destination.Id))
+					continue;
+
+				double altDistance = distances[currentId] + distance;
+				if (altDistance < distances[destination.Id])
+				{
+					distances[destination.Id] = altDistance;
+					previous[destination.Id] = (current, speedLimit);
+				}
+			}
+		}
+
+		Console.WriteLine($"No route found from {start.Name} to {end.Name}");
+		return null;
 	}
 
-	private double GetRandomizedBearing(double bearing)
+	private List<Road> ReconstructPath(
+		Dictionary<string, (Node node, int speedLimit)> previous,
+		Node start,
+		Node end)
 	{
-		double offset = (Random.Shared.NextDouble() * 2 - 1) * MAX_BEARING_DEVIATION;
-		double newBearing = bearing + offset;
+		var path = new List<Road>();
+		var current = end;
 
-		newBearing = (newBearing % 360 + 360) % 360;
-		return newBearing;
+		while (current.Id != start.Id)
+		{
+			if (!previous.ContainsKey(current.Id))
+				return new List<Road>();
+
+			var (previousNode, speedLimit) = previous[current.Id];
+
+			// Calculate distance in miles
+			double distanceInMiles = GeoMath.CalculateDistance(previousNode.Coordinate, current.Coordinate);
+
+			path.Insert(0, new Road
+			{
+				Distance = distanceInMiles,
+				Bearing = GeoMath.CalculateBearing(previousNode.Coordinate, current.Coordinate),
+				SpeedLimit = (int)(speedLimit * 0.62137)
+			});
+			current = previousNode;
+		}
+
+		return path;
 	}
 }

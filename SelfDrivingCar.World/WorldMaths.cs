@@ -67,6 +67,62 @@ public class WorldMaths
 		return new Coordinate(RadiansToDegrees(destLonRad), RadiansToDegrees(destLatRad));
 	}
 
+	/// <summary>
+	/// Checks if a point is on a road segment (within a tolerance distance)
+	/// </summary>
+	/// <param name="pointToCheck">The point to check</param>
+	/// <param name="roadStart">Start of the road segment</param>
+	/// <param name="roadEnd">End of the road segment</param>
+	/// <param name="toleranceKm">Maximum distance from road to be considered "on road" (default 0.1 km)</param>
+	/// <returns>True if the point is on the road within tolerance</returns>
+	public static bool IsPointOnRoad(Coordinate pointToCheck, Coordinate roadStart, Coordinate roadEnd, double toleranceKm = 0.1)
+	{
+		// Calculate distances
+		double distanceToStart = CalculateDistance(pointToCheck, roadStart);
+		double distanceToEnd = CalculateDistance(pointToCheck, roadEnd);
+		double roadLength = CalculateDistance(roadStart, roadEnd);
+
+		// If the point is beyond either end of the road by the tolerance, it's off the road
+		// Using triangle inequality: if distToStart + distToEnd > roadLength + 2*tolerance, point is off road
+		if (distanceToStart + distanceToEnd > roadLength + (2 * toleranceKm))
+		{
+			return false; // Point is beyond the endpoints
+		}
+
+		// Find closest point on the line segment using parametric projection
+		// This uses the perpendicular distance calculation
+		double closestDistance = CalculatePerpendicularDistance(pointToCheck, roadStart, roadEnd);
+
+		return closestDistance <= toleranceKm;
+	}
+
+	/// <summary>
+	/// Calculates the perpendicular distance from a point to a line segment
+	/// </summary>
+	private static double CalculatePerpendicularDistance(Coordinate point, Coordinate lineStart, Coordinate lineEnd)
+	{
+		double lat1 = DegreesToRadians(lineStart.Latitude);
+		double lon1 = DegreesToRadians(lineStart.Longitude);
+		double lat2 = DegreesToRadians(lineEnd.Latitude);
+		double lon2 = DegreesToRadians(lineEnd.Longitude);
+		double latP = DegreesToRadians(point.Latitude);
+		double lonP = DegreesToRadians(point.Longitude);
+
+		// Calculate the cross-track distance using haversine
+		double dLon = lon2 - lon1;
+		double y = Math.Sin(dLon) * Math.Cos(lat2);
+		double x = Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(dLon);
+		double bearing13 = Math.Atan2(y, x);
+
+		double dLat = latP - lat1;
+		double dLon13 = lonP - lon1;
+		double distance13 = Math.Acos(Math.Sin(lat1) * Math.Sin(latP) + Math.Cos(lat1) * Math.Cos(latP) * Math.Cos(dLon13));
+
+		double crossTrackDistance = Math.Asin(Math.Sin(distance13) * Math.Sin(bearing13 - Math.Atan2(y, x))) * EarthRadiusKm;
+
+		return Math.Abs(crossTrackDistance);
+	}
+
 	private static double DegreesToRadians(double degrees)
 	{
 		return degrees * Math.PI / 180.0;

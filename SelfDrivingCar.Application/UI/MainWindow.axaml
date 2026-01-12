@@ -19,10 +19,20 @@
 			</StackPanel>
 		</Border>
 
-		<!-- Map Canvas -->
-		<Border Grid.Row="1" Background="White" BorderBrush="#34495E" BorderThickness="2" Margin="10">
-			<ui:MapCanvas x:Name="MapCanvas"/>
-		</Border>
+		<!-- Map Canvas with Fine Notification Overlay -->
+		<Grid Grid.Row="1">
+			<Border Background="White" BorderBrush="#34495E" BorderThickness="2" Margin="10">
+				<ui:MapCanvas x:Name="MapCanvas"/>
+			</Border>
+
+			<!-- Fine Notification Popup -->
+			<Border x:Name="FineNotificationPopup" Background="#FF6B6B" BorderBrush="#CC0000" BorderThickness="2" CornerRadius="8" Padding="15" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Top" Opacity="0">
+				<StackPanel Spacing="5">
+					<TextBlock Text="⚠️  SPEED VIOLATION - FINE ISSUED" Foreground="White" FontWeight="Bold" FontSize="14"/>
+					<TextBlock x:Name="FineNotificationText" Text="" Foreground="White" FontSize="12"/>
+				</StackPanel>
+			</Border>
+		</Grid>
 
 		<!-- Bottom Info Panel -->
 		<Border Grid.Row="2" Background="#34495E" Padding="10">
@@ -34,13 +44,12 @@
 					<ColumnDefinition Width="*"/>
 				</Grid.ColumnDefinitions>
 
-				<StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left">
+				<StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom">
 					<TextBlock Text="Nodes: " Foreground="#ECF0F1" FontWeight="Bold"/>
 					<TextBlock x:Name="NodeCountText" Text="0" Foreground="White"/>
 					<TextBlock Text="  |  Roads: " Foreground="#ECF0F1" FontWeight="Bold" Margin="15,0,0,0"/>
 					<TextBlock x:Name="RoadCountText" Text="0" Foreground="White"/>
 				</StackPanel>
-
 				<TextBlock Grid.Column="1" x:Name="StatusText" Text="Select start (left-click) and end (right-click) nodes" Foreground="#BDC3C7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
 				<Button Grid.Column="2" x:Name="StartDrivingButton" Content="Start Driving" Click="OnStartDrivingClick" Margin="20,0,0,0" Background="#E74C3C" Foreground="White" Padding="15,8" FontWeight="Bold" IsEnabled="False" HorizontalAlignment="Right"/>
