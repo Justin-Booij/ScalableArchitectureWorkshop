@@ -1,7 +1,6 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using SelfDrivingCar.Application.UI;
 using SelfDrivingCar.Car;
-using SelfDrivingCar.SpamElgoog;
 using SelfDrivingCar.TomTom;
 using SelfDrivingCar.World;
 
@@ -11,7 +10,6 @@ public sealed class App : Avalonia.Application
 {
 	private CarDriver carController;
 	private MotMotNavigate motMotNavigate;
-    private SpamElgoogNavigate spamElgoogNavigate;
 	private Map currentMap;
 	private MainWindow mainWindow;
 
@@ -19,7 +17,6 @@ public sealed class App : Avalonia.Application
 	{
 		currentMap = MapGenerator.GenerateMap();
 		motMotNavigate = new MotMotNavigate(currentMap);
-        spamElgoogNavigate = new SpamElgoogNavigate(currentMap);
     }
 
 	public override void OnFrameworkInitializationCompleted()

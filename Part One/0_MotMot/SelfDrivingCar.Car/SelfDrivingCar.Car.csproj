@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\SelfDrivingCar.MotMot\SelfDrivingCar.MotMot.csproj" />
-      <ProjectReference Include="..\SelfDrivingCar.SpamElgoog\SelfDrivingCar.SpamElgoog.csproj" />
     </ItemGroup>
 
 </Project>
