@@ -1,0 +1,68 @@
+<Window xmlns="https://github.com/avaloniaui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:ui="clr-namespace:SelfDrivingCar.Application.UI" mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800" x:Class="SelfDrivingCar.Application.UI.MainWindow" Title="Self-Driving Car - World Map Viewer" Width="1200" Height="800">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<!-- Top Panel -->
+		<Border Grid.Row="0" Background="#2C3E50" Padding="15">
+			<StackPanel>
+				<TextBlock Text="Self-Driving Car Workshop" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+				<TextBlock Text="World Map Visualization" FontSize="14" Foreground="#BDC3C7" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+			</StackPanel>
+		</Border>
+
+		<!-- Map Canvas with Fine Notification Overlay -->
+		<Grid Grid.Row="1">
+			<Border Background="White" BorderBrush="#34495E" BorderThickness="2" Margin="10">
+				<ui:MapCanvas x:Name="MapCanvas"/>
+			</Border>
+
+			<!-- Fine Notification Popup -->
+			<Border x:Name="FineNotificationPopup" Background="#FF6B6B" BorderBrush="#CC0000" BorderThickness="2" CornerRadius="8" Padding="15" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Top" Opacity="0">
+				<StackPanel Spacing="5">
+					<TextBlock Text="⚠️  SPEED VIOLATION - FINE ISSUED" Foreground="White" FontWeight="Bold" FontSize="14"/>
+					<TextBlock x:Name="FineNotificationText" Text="" Foreground="White" FontSize="12"/>
+				</StackPanel>
+			</Border>
+		</Grid>
+
+		<!-- Bottom Info Panel -->
+		<Border Grid.Row="2" Background="#34495E" Padding="10">
+			<Grid>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+					<TextBlock Text="Nodes: " Foreground="#ECF0F1" FontWeight="Bold"/>
+					<TextBlock x:Name="NodeCountText" Text="0" Foreground="White"/>
+					<TextBlock Text="  |  Roads: " Foreground="#ECF0F1" FontWeight="Bold" Margin="15,0,0,0"/>
+					<TextBlock x:Name="RoadCountText" Text="0" Foreground="White"/>
+				</StackPanel>
+				<TextBlock Grid.Column="1" x:Name="StatusText" Text="Select start (left-click) and end (right-click) nodes" Foreground="#BDC3C7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+				<Button Grid.Column="2" x:Name="StartDrivingButton" Content="Start Driving" Click="OnStartDrivingClick" Margin="20,0,0,0" Background="#E74C3C" Foreground="White" Padding="15,8" FontWeight="Bold" IsEnabled="False" HorizontalAlignment="Right"/>
+
+				<StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+					<Ellipse Width="12" Height="12" Fill="#E74C3C" Margin="20,0,8,0"/>
+					<TextBlock Text="Nodes" Foreground="White" Margin="0,0,25,0"/>
+					<Rectangle Width="25" Height="4" Fill="#4CAF50" Margin="0,0,8,0"/>
+					<TextBlock Text="Roads" Foreground="White" Margin="0,0,25,0"/>
+					<Ellipse Width="16" Height="16" Fill="White" Stroke="#DC143C" StrokeThickness="2" Margin="0,0,8,0"/>
+					<TextBlock Text="Speed Signs" Foreground="White"/>
+				</StackPanel>
+			</Grid>
+		</Border>
+	</Grid>
+</Window>

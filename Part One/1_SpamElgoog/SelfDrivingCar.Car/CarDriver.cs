@@ -14,10 +14,10 @@ public class CarDriver
 	public int CurrentRoadIndex = 0;
 	public List<Road>? CurrentRoute = null;
 
-	private MotMotNavigate navigation;
+	private SpamElgoogNavigate navigation;
 	private Random random = new Random();
 
-	public CarDriver(MotMotNavigate navigation)
+	public CarDriver(SpamElgoogNavigate navigation)
 	{
 		this.navigation = navigation;
 	}
@@ -103,6 +103,7 @@ public class CarDriver
 			
 			CurrentPosition = WorldMaths.CalculateDestinationPoint(CurrentPosition, CurrentBearing, distanceToTravel);
 			traveledDistance += distanceToTravel;
+
 			DriftBearing();
 			DriftSpeed();
 

@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
 using SelfDrivingCar.Application.UI;
 using SelfDrivingCar.Car;
 using SelfDrivingCar.SpamElgoog;
@@ -36,7 +34,7 @@ public sealed class App : Avalonia.Application
 
 	private void CreateAndSetupWindow(IClassicDesktopStyleApplicationLifetime desktop)
 	{
-      carController = new CarDriver(motMotNavigate);
+      carController = new CarDriver(spamElgoogNavigate);
 	  mainWindow = new MainWindow();
 	  
 		if (currentMap != null)
