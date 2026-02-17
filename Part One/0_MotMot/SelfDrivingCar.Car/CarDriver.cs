@@ -1,6 +1,5 @@
-using SelfDrivingCar.TomTom;
 using SelfDrivingCar.World;
-using SelfDrivingCar.Car.InternalTools;
+using SelfDrivingCar.MotMot;
 
 namespace SelfDrivingCar.Car;
 
@@ -48,7 +47,7 @@ public class CarDriver
 		
 		foreach (Road road in route)
 		{
-			if (!TravelAlongRoad(road, cancellationToken))
+			if (!TravelAlongRoad(cancellationToken))
 			{
 				break;
 			}
@@ -60,14 +59,13 @@ public class CarDriver
 	}
 
 
-	private bool TravelAlongRoad(Road road,
+	private bool TravelAlongRoad(
 	  CancellationToken cancellationToken = default)
 	{
 		double traveledDistance = 0;
-		CurrentSpeed += navigation.GetSpeedCorrection(road, CurrentSpeed);
-		CurrentBearing += navigation.GetBearingCorrection(road, CurrentBearing);
-		double distance = navigation.GetDistance(road);
-		bool isNavigationAvailable = true;
+		CurrentSpeed += navigation.GetSpeedCorrection(CurrentRoadIndex, CurrentSpeed);
+		CurrentBearing += navigation.GetBearingCorrection(CurrentRoadIndex, CurrentBearing);
+		double distance = navigation.GetDistance(CurrentRoadIndex);
 
 		while (traveledDistance < distance)
 		{
@@ -76,21 +74,11 @@ public class CarDriver
 				IsActive = false;
 				return false;
 			}
-
-			if (isNavigationAvailable)
-			{
-				CorrectDrift();
-				// For part two
-				
-				// isNavigationAvailable = CheckNavigationAvailability();
-			}
-			// else
-			// {
-			// 	Console.WriteLine("Navigation currently unavailable, you're on your own. Good luck");
-			// 	isNavigationAvailable = !CheckNavigationAvailability();
-			// }
 			
-
+			
+			CorrectDrift();
+			
+			
 			const double speedScaleFactor = 2400.0;
 			double distanceToTravel = (CurrentSpeed * speedScaleFactor) / 72000.0;
 			double remainingDistance = distance - traveledDistance;
@@ -112,22 +100,10 @@ public class CarDriver
 		return true;
 	}
 
-	private bool CheckNavigationAvailability()
-	{
-		int chance = random.Next(1, 6);
-		if (chance == 5)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
 	private void CorrectDrift()
 	{
-		Road road = CurrentRoute[CurrentRoadIndex];
-		CurrentSpeed += navigation.GetSpeedCorrection(road, CurrentSpeed);
-		CurrentBearing += navigation.GetBearingCorrection(road, CurrentBearing);
+		CurrentSpeed += navigation.GetSpeedCorrection(CurrentRoadIndex, CurrentSpeed);
+		CurrentBearing += navigation.GetBearingCorrection(CurrentRoadIndex, CurrentBearing);
 	}
 
 	private void DriftBearing(double driftPercentage = 0.05)

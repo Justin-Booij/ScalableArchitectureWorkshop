@@ -4,6 +4,8 @@ namespace SelfDrivingCar.SpamElgoog;
 
 public class SpamElgoogNavigate(Map worldMap)
 {
+	private List<Road> currentRoute;
+	
 	public List<Road>? Navigate(Node start, Node end)
 	{
 		Console.WriteLine($"Finding route from {start.Name} to {end.Name}");
@@ -64,19 +66,19 @@ public class SpamElgoogNavigate(Map worldMap)
 		return null;
 	}
 
-	public double GetSpeedCorrection(Road road, double currentSpeed)
+	public double GetSpeedCorrection(int roadIndex, double currentSpeed)
 	{
-		return road.SpeedLimit - currentSpeed;
+		return currentRoute[roadIndex].SpeedLimit - currentSpeed;
 	}
 
-	public double GetBearingCorrection(Road road, double currentBearing)
+	public double GetBearingCorrection(int roadIndex, double currentBearing)
 	{
-		return road.Bearing - currentBearing;
+		return currentRoute[roadIndex].Bearing - currentBearing;
 	}
 
-	public double GetDistance(Road road)
+	public double GetDistance(int roadIndex)
 	{
-		return road.Distance;
+		return currentRoute[roadIndex].Distance;
 	}
 	
 	
@@ -108,6 +110,7 @@ public class SpamElgoogNavigate(Map worldMap)
 			current = previousNode;
 		}
 
+		currentRoute = path;
 		return path;
 	}
 }

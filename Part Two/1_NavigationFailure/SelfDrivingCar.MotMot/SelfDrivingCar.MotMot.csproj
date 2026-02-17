@@ -3,7 +3,7 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<RootNamespace>SelfDrivingCar.MotMot</RootNamespace>
+		<RootNamespace>SelfDrivingCar.TomTom</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\SelfDrivingCar.World\SelfDrivingCar.World.csproj" />

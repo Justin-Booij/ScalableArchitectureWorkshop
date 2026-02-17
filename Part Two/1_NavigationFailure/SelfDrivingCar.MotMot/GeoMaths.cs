@@ -1,6 +1,6 @@
 using SelfDrivingCar.World;
 
-namespace SelfDrivingCar.MotMot;
+namespace SelfDrivingCar.TomTom;
 
 public class GeoMaths {
   private const double EarthRadiusKm = 6371.0;

@@ -1,7 +1,7 @@
 using Avalonia.Controls.ApplicationLifetimes;
 using SelfDrivingCar.Application.UI;
 using SelfDrivingCar.Car;
-using SelfDrivingCar.TomTom;
+using SelfDrivingCar.MotMot;
 using SelfDrivingCar.World;
 
 namespace SelfDrivingCar.Application;

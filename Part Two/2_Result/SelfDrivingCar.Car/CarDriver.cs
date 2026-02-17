@@ -1,4 +1,5 @@
 using SelfDrivingCar.World;
+using SelfDrivingCar.Car.InternalTools;
 using SelfDrivingCar.SpamElgoog;
 
 namespace SelfDrivingCar.Car;
@@ -12,12 +13,16 @@ public class CarDriver
 	public int CurrentRoadIndex = 0;
 	public List<Road>? CurrentRoute = null;
 
-	private SpamElgoogNavigate navigation;
+	private NavigationAdapter navigation;
+	private DriftCorrectionFacade driftCorrection;
 	private Random random = new Random();
 
-	public CarDriver(SpamElgoogNavigate navigation)
+	public CarDriver(NavigationAdapter navigation)
 	{
 		this.navigation = navigation;
+		driftCorrection = new DriftCorrectionFacade(
+			new InertialMeasurementUnit(),
+			new SignReader());
 	}
 
 	public List<Road>? CalculateRoute(Node start, Node destination)
@@ -57,8 +62,7 @@ public class CarDriver
 
 		IsActive = false;
 	}
-
-
+	
 	private bool TravelAlongRoad(
 	  CancellationToken cancellationToken = default)
 	{
@@ -66,6 +70,7 @@ public class CarDriver
 		CurrentSpeed += navigation.GetSpeedCorrection(CurrentRoadIndex, CurrentSpeed);
 		CurrentBearing += navigation.GetBearingCorrection(CurrentRoadIndex, CurrentBearing);
 		double distance = navigation.GetDistance(CurrentRoadIndex);
+		bool isNavigationAvailable = true;
 
 		while (traveledDistance < distance)
 		{
@@ -74,8 +79,20 @@ public class CarDriver
 				IsActive = false;
 				return false;
 			}
-
-			CorrectDrift();
+			
+			
+			if (isNavigationAvailable)
+			{
+				CorrectDrift();
+				isNavigationAvailable = CheckNavigationAvailability();
+			}
+			else
+			{
+				Console.WriteLine("Navigation currently unavailable, fallback tools engaged.");
+				CorrectDriftWithFallback();
+				isNavigationAvailable = !CheckNavigationAvailability();
+			}
+			
 			
 			const double speedScaleFactor = 2400.0;
 			double distanceToTravel = (CurrentSpeed * speedScaleFactor) / 72000.0;
@@ -97,11 +114,33 @@ public class CarDriver
 
 		return true;
 	}
+	
+	private bool CheckNavigationAvailability()
+	{
+		int chance = random.Next(1, 6);
+		if (chance == 5)
+		{
+			return false;
+		}
+
+		return true;
+	}
 
 	private void CorrectDrift()
 	{
 		CurrentSpeed += navigation.GetSpeedCorrection(CurrentRoadIndex, CurrentSpeed);
 		CurrentBearing += navigation.GetBearingCorrection(CurrentRoadIndex, CurrentBearing);
+	}
+
+	private void CorrectDriftWithFallback()
+	{
+		if (CurrentRoute == null)
+			return;
+
+		var road = CurrentRoute[CurrentRoadIndex];
+		var corrections = driftCorrection.GetCorrections(road, CurrentSpeed, CurrentBearing);
+		CurrentSpeed += corrections.SpeedCorrection;
+		CurrentBearing += corrections.BearingCorrection;
 	}
 
 	private void DriftBearing(double driftPercentage = 0.05)

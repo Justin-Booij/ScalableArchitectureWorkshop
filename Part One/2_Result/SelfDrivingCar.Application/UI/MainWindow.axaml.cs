@@ -516,7 +516,7 @@ public partial class MainWindow : Window
 
 		// Get the speed limit from the navigation service (might be in mph if using SpamElgoog)
 		var navigationRoad = _carDriver.CurrentRoute[roadIdx];
-		int navigationSpeedLimit = navigationRoad.SpeedLimit;
+		double navigationSpeedLimit = navigationRoad.SpeedLimit;
 
 		// Get the world's actual speed limit for this road segment
 
@@ -545,16 +545,16 @@ public partial class MainWindow : Window
 		// Compare: if navigation speed limit is significantly different from world speed limit,
 		// it indicates a unit mismatch (e.g., SpamElgoog using mph instead of km/h)
 		int expectedSpeed = worldSpeedLimit.Value;
-		int reportedSpeed = navigationSpeedLimit;
+		double reportedSpeed = navigationSpeedLimit;
 
 		// A significant discrepancy indicates wrong units
 		// e.g., 50 mph reported as 50 km/h is a ~30 km/h error
-		int speedDifference = Math.Abs(expectedSpeed - reportedSpeed);
+		double speedDifference = Math.Abs(expectedSpeed - reportedSpeed);
 
 		if (speedDifference >= SPEED_VIOLATION_THRESHOLD_KMH)
 		{
 			// Fine based on the discrepancy
-			int fine = Math.Max(speedDifference * BASE_FINE_PER_KMH, 25); // Minimum fine of $25
+			int fine = (int)Math.Max(speedDifference * BASE_FINE_PER_KMH, 25); // Minimum fine of $25
 
 			string violationType = reportedSpeed > expectedSpeed ? "Speeding" : "Too Slow";
 			ShowFineNotification(fine, $"{violationType} ({reportedSpeed} vs {expectedSpeed} km/h limit)");

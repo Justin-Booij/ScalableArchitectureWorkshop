@@ -1,11 +1,8 @@
 using SelfDrivingCar.World;
 
-namespace SelfDrivingCar.MotMot;
+namespace SelfDrivingCar.TomTom;
 
-public class MotMotNavigate(Map worldMap)
-{
-  private List<Road> currentRoute;
-  
+public class MotMotNavigate(Map worldMap) {
   public List<Road>? Navigate(Node start, Node end) {
     Console.WriteLine($"Finding route from {start.Name} to {end.Name}");
 
@@ -65,19 +62,19 @@ public class MotMotNavigate(Map worldMap)
     return null;
   }
   
-  public double GetSpeedCorrection(int roadIndex, double currentSpeed)
+  public double GetSpeedCorrection(Road road, double currentSpeed)
   {
-    return currentRoute[roadIndex].SpeedLimit - currentSpeed;
+    return road.SpeedLimit - currentSpeed;
   }
 
-  public double GetBearingCorrection(int roadIndex, double currentBearing)
+  public double GetBearingCorrection(Road road, double currentBearing)
   {
-    return currentRoute[roadIndex].Bearing - currentBearing;
+    return road.Bearing - currentBearing;
   }
 
-  public double GetDistance(int roadIndex)
+  public double GetDistance(Road road)
   {
-    return currentRoute[roadIndex].Distance;
+    return road.Distance;
   }
 
   private List<Road> ReconstructPath(
@@ -101,7 +98,6 @@ public class MotMotNavigate(Map worldMap)
       current = previousNode;
     }
 
-    currentRoute = path;
     return path;
   }
 }
