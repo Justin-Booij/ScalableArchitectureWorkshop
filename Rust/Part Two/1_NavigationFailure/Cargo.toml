@@ -1,0 +1,9 @@
+[package]
+name = "self_driving_car_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rand = "0.8"
+eframe = "0.31"
+egui = "0.31"
